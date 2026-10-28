@@ -715,6 +715,7 @@ part_1=function(individuals,
       i=i+1
     }
     
+    print("1")
     
     CI_list=list()
     for(i in 1:length(akde_list)){
@@ -727,7 +728,7 @@ part_1=function(individuals,
     
     #df_bbox=make_bbox(sf_object = sf_object, padding=padding)
     df_bbox=make_bbox(sf_object = combined_CI, padding=padding)
-    #print("sf_object bbox made")
+    print("sf_object bbox made")
     #print(df_bbox)
     
 
@@ -740,13 +741,15 @@ part_1=function(individuals,
   bounding_box_polygon=temp[[3]]
   
   # get data from the nasa digital elevation model that covers bounding box
+  print("getting NASADEM")
   nasadem_obj=get_nasadem(df_bbox)
   elevation_data=merge_nasadem_rasters(nasadem_obj)
   
   
   # get landsat api end point
+  print("getting landsat api end points")
   landsat_obj=get_landsat(df_bbox, time_interval)
-  #print("landsat object made")
+  print("landsat object made")
   
   #This nested for loop will find the lansat rasters that have the min cloud cover over the study area
   min_cloud_indices=list()
@@ -765,7 +768,7 @@ part_1=function(individuals,
     min_cloud_indices=append(min_cloud_indices,min_cloud_index)
   }
   
-  #print("min cloud index found")
+  print("min cloud index found")
   
   
   
@@ -778,13 +781,13 @@ part_1=function(individuals,
     landsat_tiles = append(landsat_tiles, temp_rgb_raster)
     if (j == 1) {
       # Use the first tile as the reference (template)
-      landsat_tiles[[j]] <- temp_rgb_raster
+      landsat_tiles[[j]] = temp_rgb_raster
     } else {
       # Project subsequent tiles to match the first tile
-      temp_rgb_raster <- projectRaster(temp_rgb_raster, to = landsat_tiles[[1]], method = "bilinear")
-      landsat_tiles[[j]] <- temp_rgb_raster
+      temp_rgb_raster = projectRaster(temp_rgb_raster, to = landsat_tiles[[1]], method = "bilinear")
+      landsat_tiles[[j]] = temp_rgb_raster
     }
-    #print("rasters projected")
+    print("rasters projected")
     #print(crs(landsat_tiles[[j]],asText=TRUE))
     j=j+1
   }
@@ -803,16 +806,17 @@ part_1=function(individuals,
   
   
   #convert the crs of the elevation data to the landsat raster data crs
+  print("about to project rasters")
   elevation_utm=raster::projectRaster(elevation_data, merged_rgb , crs=crs(merged_rgb , asText=TRUE), method='bilinear')
-  #print("rasters projected")
+  print("rasters projected")
   
   #convert the extent of bounding box of the study from lat,long to UTM
   e=get_extent_utm(df_bbox, elevation_utm)
   #print("convert bbox to extent")
   
-  # cropt the elevation raster and landsat raster to the size of the study area
+  # crop the elevation raster and landsat raster to the size of the study area
   cropped_list=crop_rasters(e, merged_rgb, elevation_utm)
-  #print("raster cropped")
+  print("raster cropped")
   landsat_rgb_array=cropped_list[[1]]
   elevation_cropped=cropped_list[[2]]
   elevation_matrix=cropped_list[[3]]
@@ -822,7 +826,7 @@ part_1=function(individuals,
   # increase the contrast of the RGB landsat raster
   landsat_rgb_contrast = scales::rescale(landsat_rgb_array,to=c(0,1))
   #landsat_rgb_contrast=landsat_rgb_array
-  #print("landsat rescaled")
+  print("landsat rescaled")
   
   #make raster brick for the RGB 
   landsat_rgb_cropped=raster::brick(landsat_rgb_contrast)
